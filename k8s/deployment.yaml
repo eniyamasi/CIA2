@@ -1,0 +1,26 @@
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: cia2-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: cia2-app
+
+  template:
+    metadata:
+      labels:
+        app: cia2-app
+
+    spec:
+      containers:
+        - name: cia2-app
+          image: eniyam/cia2-cicd:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
