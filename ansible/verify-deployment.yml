@@ -1,0 +1,24 @@
+---
+- name: Verify CIA2 application deployment
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars:
+    app_url: "https://cia2-cicd-614826131677.asia-south1.run.app"
+
+  tasks:
+    - name: Check application health endpoint
+      ansible.builtin.uri:
+        url: "{{ app_url }}/health"
+        method: GET
+        return_content: true
+        status_code: 200
+      register: health_response
+
+    - name: Verify application response
+      ansible.builtin.assert:
+        that:
+          - "'Application is running!' in health_response.content"
+        success_msg: "Ansible verified that the application is running!"
+        fail_msg: "Application health verification failed!"
