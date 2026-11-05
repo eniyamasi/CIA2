@@ -73,3 +73,12 @@ jobs:
           service: ${{ vars.CLOUD_RUN_SERVICE }}
           region: ${{ vars.GCP_REGION }}
           image: docker.io/eniyam/cia2-cicd:${{ github.sha }}
+      # 10. Install Ansible
+      - name: Install Ansible
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ansible
+
+      # 11. Verify deployment with Ansible
+      - name: Verify deployment with Ansible
+        run: ansible-playbook ansible/verify-deployment.yml
