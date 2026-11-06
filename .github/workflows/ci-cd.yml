@@ -43,7 +43,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 6. Build and push Docker image
+      # 6. Build and push image to Docker Hub
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -66,19 +66,32 @@ jobs:
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
-      # 9. Deploy to Cloud Run
-      - name: Deploy to Google Cloud Run
+      # 9. Configure Docker authentication for Artifact Registry
+      - name: Configure Docker authentication
+        run: gcloud auth configure-docker asia-south1-docker.pkg.dev --quiet
+
+      # 10. Build and push image to Artifact Registry
+      - name: Push image to Artifact Registry
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: asia-south1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/cia2-images/cia2-cicd:${{ github.sha }}
+
+      # 11. Deploy to Google Cloud Run
+      - name: Deploy to Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2
         with:
           service: ${{ vars.CLOUD_RUN_SERVICE }}
           region: ${{ vars.GCP_REGION }}
-          image: docker.io/eniyam/cia2-cicd:${{ github.sha }}
-      # 10. Install Ansible
+          image: asia-south1-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/cia2-images/cia2-cicd:${{ github.sha }}
+
+      # 12. Install Ansible
       - name: Install Ansible
         run: |
           sudo apt-get update
           sudo apt-get install -y ansible
 
-      # 11. Verify deployment with Ansible
+      # 13. Verify deployment with Ansible
       - name: Verify deployment with Ansible
         run: ansible-playbook ansible/verify-deployment.yml
